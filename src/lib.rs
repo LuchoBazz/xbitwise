@@ -52,9 +52,12 @@ mod tests {
 
     #[test]
     fn set_bit() {
-        let number: i8 = 0b00010;
-        let other = number.set_bit(4).unwrap();
-        assert_eq!(other, 0b10010);
+        let number  : i8 = 0b00010;
+        let expected: i8 = 0b10010;
+        let other = number
+        .set_bit(4)
+        .unwrap();
+        assert_eq!(other, expected);
     }
 
 }
