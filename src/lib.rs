@@ -197,7 +197,7 @@ mod tests {
     fn set_bit() {
         let number: i8 = 0b00010;
         let expected: i8 = 0b10010;
-        let other = number.set_bit(4, true).unwrap();
+        let other = number.set_bit_to(4, true).unwrap();
         assert_eq!(other, expected);
     }
 }
