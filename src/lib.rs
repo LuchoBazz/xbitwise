@@ -30,8 +30,7 @@ mod private {
         fn set_to_low(self, bit: usize) -> Option<Self>;
         fn flip_bit_unchecked(self, bit: usize) -> Self;
         fn flip_bit(self, bit: usize) -> Option<Self>;
-        fn flip_all_unchecked(self) -> Self;
-        fn flip_all(self) -> Option<Self>;
+        fn flip_all(self) -> Self;
 
         fn parity(self) -> usize;
         fn hamming_distance(self, other: Self) -> usize;
@@ -105,12 +104,8 @@ macro_rules! impl_bitwise {
                 Some(self.flip_bit_unchecked(bit))
             }
 
-            fn flip_all_unchecked(self) -> Self {
+            fn flip_all(self) -> Self {
                 !self
-            }
-
-            fn flip_all(self) -> Option<Self> {
-                Some(self.flip_all_unchecked())
             }
 
             fn parity(self) -> usize {
