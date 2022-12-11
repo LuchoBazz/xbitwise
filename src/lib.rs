@@ -4,85 +4,104 @@ mod private {
     pub trait Sealed: Copy {
         type Type;
 
-        fn has_high_bit_unchecked(self, bit: usize) -> bool;
-        fn has_high_bit(self, bit: usize) -> Option<bool>;
-        fn has_low_bit_unchecked(self, bit: usize) -> bool;
-        fn has_low_bit(self, bit: usize) -> Option<bool>;
-
-        fn set_bit_unchecked(self, bit: usize) -> Self;
-        fn set_bit(self, bit: usize) -> Option<Self::Type>;
+        fn set_bit_unchecked(self, bit: usize, value: bool) -> Self;
+        fn set_bit(self, bit: usize, value: bool) -> Option<Self::Type>;
         fn set_high_unchecked(self, bit: usize) -> Self;
         fn set_high(self, bit: usize) -> Option<Self::Type>;
         fn set_low_unchecked(self, bit: usize) -> Self;
         fn set_low(self, bit: usize) -> Option<Self::Type>;
+        fn flip_bit_unchecked(self, bit: usize) -> Self;
+        fn flip_bit(self, bit: usize) -> Option<Self::Type>;
+        fn flip_all_unchecked(self) -> Self;
+        fn flip_all(self) -> Option<Self::Type>;
+
+        fn has_high_bit_unchecked(self, bit: usize) -> bool;
+        fn has_high_bit(self, bit: usize) -> Option<bool>;
+        fn has_low_bit_unchecked(self, bit: usize) -> bool;
+        fn has_low_bit(self, bit: usize) -> Option<bool>;
     }
 }
 
+macro_rules! check_bit_index_or_return_none {
+    ($bit:expr, $max_bits: expr) => {
+        if $bit >= $max_bits {
+            return None;
+        }
+    };
+}
+
 macro_rules! impl_bitwise {
-    ($($max_bits:expr => $t:ident),* as $conv_fn:ident) => {$(
+    ($($max_bits:expr => $t:ident),*) => {$(
         impl Bitwise for $t {}
 
         impl private::Sealed for $t {
 
             type Type = $t;
 
-            fn set_bit_unchecked(self, bit: usize) -> Self {
-                if self.has_high_bit_unchecked(bit) {
-                    self.set_low_unchecked(bit)
-                } else {
+            fn set_bit_unchecked(self, bit: usize, value: bool) -> Self {
+                if value {
                     self.set_high_unchecked(bit)
+                } else {
+                    self.set_low_unchecked(bit)
                 }
             }
 
-            fn set_bit(self, bit: usize) -> Option<Self::Type> {
-                if bit >= $max_bits {
-                    return None;
-                }
-                Some(self.set_bit_unchecked(bit))
+            fn set_bit(self, bit: usize, value: bool) -> Option<Self::Type> {
+                check_bit_index_or_return_none!(bit, $max_bits);
+                Some(self.set_bit_unchecked(bit, value))
             }
 
             fn set_high_unchecked(self, bit: usize) -> Self {
-                self | ((1 as Self::Type) << (bit as Self::Type))
+                self | (1 << bit)
             }
 
             fn set_high(self, bit: usize) -> Option<Self::Type> {
-                if bit >= $max_bits {
-                    return None;
-                }
+                check_bit_index_or_return_none!(bit, $max_bits);
                 Some(self.set_high_unchecked(bit))
             }
 
             fn set_low_unchecked(self, bit: usize) -> Self {
                 self & !((1 as Self) << (bit as Self))
-
             }
 
             fn set_low(self, bit: usize) -> Option<Self::Type> {
-                if bit >= $max_bits {
-                    return None;
-                }
+                check_bit_index_or_return_none!(bit, $max_bits);
                 Some(self.set_low_unchecked(bit))
             }
 
+            fn flip_bit_unchecked(self, bit: usize) -> Self {
+                self ^ (1 << bit)
+            }
+
+            fn flip_bit(self, bit: usize) -> Option<Self::Type> {
+                check_bit_index_or_return_none!(bit, $max_bits);
+                Some(self.flip_bit_unchecked(bit))
+            }
+
+            fn flip_all_unchecked(self) -> Self {
+                !self
+            }
+
+            fn flip_all(self) -> Option<Self::Type> {
+                Some(self.flip_all_unchecked())
+            }
+
             fn has_high_bit_unchecked(self, bit: usize) -> bool {
-                self & ((1 as Self::Type) << (bit as Self::Type)) > 0
+                let mask = (1 << bit);
+                self & mask == mask
             }
 
             fn has_high_bit(self, bit: usize) -> Option<bool> {
-                if bit >= $max_bits {
-                    return None;
-                }
+                check_bit_index_or_return_none!(bit, $max_bits);
                 Some(self.has_high_bit_unchecked(bit))
             }
 
             fn has_low_bit_unchecked(self, bit: usize) -> bool {
-                (self & ((1 as Self::Type) << (bit as Self::Type))) == 0
+                !self.has_high_bit_unchecked(bit)
             }
 
             fn has_low_bit(self, bit: usize) -> Option<bool> {
-                if bit >= $max_bits {
-                    return None;
-                }
+                check_bit_index_or_return_none!(bit, $max_bits);
                 Some(self.has_low_bit_unchecked(bit))
             }
         }
@@ -95,13 +114,41 @@ const I32_BITS: usize = 32;
 const I64_BITS: usize = 64;
 const I128_BITS: usize = 128;
 
-impl_bitwise!(
-    I8_BITS   => i8,
-    I16_BITS  => i16,
-    I32_BITS  => i32,
-    I64_BITS  => i64,
-    I128_BITS => i128 as i128
-);
+const U8_BITS: usize = 8;
+const U16_BITS: usize = 16;
+const U32_BITS: usize = 32;
+const U64_BITS: usize = 64;
+const U128_BITS: usize = 128;
+
+#[cfg(feature = "i8")]
+impl_bitwise!(I8_BITS => i8);
+
+#[cfg(feature = "i16")]
+impl_bitwise!(I16_BITS => i16);
+
+#[cfg(feature = "i32")]
+impl_bitwise!(I32_BITS => i32);
+
+#[cfg(feature = "i64")]
+impl_bitwise!(I64_BITS => i64);
+
+#[cfg(feature = "i128")]
+impl_bitwise!(I128_BITS => i128);
+
+#[cfg(feature = "u8")]
+impl_bitwise!(U8_BITS => u8);
+
+#[cfg(feature = "u16")]
+impl_bitwise!(U16_BITS => u16);
+
+#[cfg(feature = "u32")]
+impl_bitwise!(U32_BITS => u32);
+
+#[cfg(feature = "u64")]
+impl_bitwise!(U64_BITS => u64);
+
+#[cfg(feature = "u128")]
+impl_bitwise!(U128_BITS => u128);
 
 #[cfg(test)]
 mod tests {
@@ -111,7 +158,7 @@ mod tests {
     fn set_bit() {
         let number: i8 = 0b00010;
         let expected: i8 = 0b10010;
-        let other = number.set_bit(4).unwrap();
+        let other = number.set_bit(4, true).unwrap();
         assert_eq!(other, expected);
     }
 }
