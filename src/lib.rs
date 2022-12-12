@@ -22,22 +22,25 @@ mod private {
         fn zero() -> Self;
         fn one() -> Self;
 
-        fn set_bit_to_unchecked(self, bit: usize, new_value: bool) -> Self;
-        fn set_bit_to(self, bit: usize, new_value: bool) -> Option<Self>;
-        fn set_to_high_unchecked(self, bit: usize) -> Self;
-        fn set_to_high(self, bit: usize) -> Option<Self>;
-        fn set_to_low_unchecked(self, bit: usize) -> Self;
-        fn set_to_low(self, bit: usize) -> Option<Self>;
-        fn flip_bit_unchecked(self, bit: usize) -> Self;
-        fn flip_bit(self, bit: usize) -> Option<Self>;
+        fn update_bit_unchecked(self, index: usize, new_value: bool) -> Self;
+        fn update_bit(self, index: usize, new_value: bool) -> Option<Self>;
+        fn set_bit_unchecked(self, index: usize) -> Self;
+        fn set_bit(self, index: usize) -> Option<Self>;
+        fn clear_bit_unchecked(self, index: usize) -> Self;
+        fn clear_bit(self, index: usize) -> Option<Self>;
+        fn flip_bit_unchecked(self, index: usize) -> Self;
+        fn flip_bit(self, index: usize) -> Option<Self>;
         fn flip_all(self) -> Self;
+        fn clear(self) -> Self;
+        // fn fill_range(self, left: usize, right: usize) -> Self;
+        fn fill_all(self) -> Self;
 
         fn parity(self) -> usize;
         fn hamming_distance(self, other: Self) -> usize;
         fn bit_size() -> usize;
 
-        fn at_unchecked(self, bit: usize) -> bool;
-        fn at(self, bit: usize) -> Option<bool>;
+        fn at_unchecked(self, index: usize) -> bool;
+        fn at(self, index: usize) -> Option<bool>;
     }
 }
 
@@ -62,48 +65,62 @@ macro_rules! impl_bitwise {
                 1
             }
 
-            fn set_bit_to_unchecked(self, bit: usize, new_value: bool) -> Self {
+            fn update_bit_unchecked(self, index: usize, new_value: bool) -> Self {
                 if new_value {
-                    self.set_to_high_unchecked(bit)
+                    self.set_bit_unchecked(index)
                 } else {
-                    self.set_to_low_unchecked(bit)
+                    self.clear_bit_unchecked(index)
                 }
             }
 
-            fn set_bit_to(self, bit: usize, new_value: bool) -> Option<Self> {
-                check_bit_index_or_return_none!(bit, $max_bits);
-                Some(self.set_bit_to_unchecked(bit, new_value))
+            fn update_bit(self, index: usize, new_value: bool) -> Option<Self> {
+                check_bit_index_or_return_none!(index, $max_bits);
+                Some(self.update_bit_unchecked(index, new_value))
             }
 
-            fn set_to_high_unchecked(self, bit: usize) -> Self {
-                self | (Self::one() << bit)
+            fn set_bit_unchecked(self, index: usize) -> Self {
+                self | (Self::one() << index)
             }
 
-            fn set_to_high(self, bit: usize) -> Option<Self> {
-                check_bit_index_or_return_none!(bit, $max_bits);
-                Some(self.set_to_high_unchecked(bit))
+            fn set_bit(self, index: usize) -> Option<Self> {
+                check_bit_index_or_return_none!(index, $max_bits);
+                Some(self.set_bit_unchecked(index))
             }
 
-            fn set_to_low_unchecked(self, bit: usize) -> Self {
-                self & !(Self::one() << bit)
+            fn clear_bit_unchecked(self, index: usize) -> Self {
+                self & !(Self::one() << index)
             }
 
-            fn set_to_low(self, bit: usize) -> Option<Self> {
-                check_bit_index_or_return_none!(bit, $max_bits);
-                Some(self.set_to_low_unchecked(bit))
+            fn clear_bit(self, index: usize) -> Option<Self> {
+                check_bit_index_or_return_none!(index, $max_bits);
+                Some(self.clear_bit_unchecked(index))
             }
 
-            fn flip_bit_unchecked(self, bit: usize) -> Self {
-                self ^ (Self::one() << bit)
+            fn flip_bit_unchecked(self, index: usize) -> Self {
+                self ^ (Self::one() << index)
             }
 
-            fn flip_bit(self, bit: usize) -> Option<Self> {
-                check_bit_index_or_return_none!(bit, $max_bits);
-                Some(self.flip_bit_unchecked(bit))
+            fn flip_bit(self, index: usize) -> Option<Self> {
+                check_bit_index_or_return_none!(index, $max_bits);
+                Some(self.flip_bit_unchecked(index))
             }
 
             fn flip_all(self) -> Self {
                 !self
+            }
+
+            fn clear(self) -> Self {
+                self & 0
+            }
+
+            // TODO: test
+            // fn fill_range(self, left: usize, right: usize) -> Self {
+            //     let range = (((1 << (left - 1)) - 1) ^ ((1 << right) - 1));
+            //     self | range
+            // }
+
+            fn fill_all(self) -> Self {
+                self.clear().flip_all()
             }
 
             fn parity(self) -> usize {
@@ -118,14 +135,14 @@ macro_rules! impl_bitwise {
                 $max_bits
             }
 
-            fn at_unchecked(self, bit: usize) -> bool {
-                let mask = (Self::one() << bit);
+            fn at_unchecked(self, index: usize) -> bool {
+                let mask = (Self::one() << index);
                 (self & mask) == mask
             }
 
-            fn at(self, bit: usize) -> Option<bool> {
-                check_bit_index_or_return_none!(bit, $max_bits);
-                Some(self.at_unchecked(bit))
+            fn at(self, index: usize) -> Option<bool> {
+                check_bit_index_or_return_none!(index, $max_bits);
+                Some(self.at_unchecked(index))
             }
         }
     )*};
@@ -181,7 +198,7 @@ mod tests {
     fn set_bit() {
         let number: i8 = 0b00010;
         let expected: i8 = 0b10010;
-        let other = number.set_bit_to(4, true).unwrap();
+        let other = number.update_bit(4, true).unwrap();
         assert_eq!(other, expected);
     }
 }
