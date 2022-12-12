@@ -36,10 +36,8 @@ mod private {
         fn hamming_distance(self, other: Self) -> usize;
         fn bit_size() -> usize;
 
-        fn has_high_bit_unchecked(self, bit: usize) -> bool;
-        fn has_high_bit(self, bit: usize) -> Option<bool>;
-        fn has_low_bit_unchecked(self, bit: usize) -> bool;
-        fn has_low_bit(self, bit: usize) -> Option<bool>;
+        fn at_unchecked(self, bit: usize) -> bool;
+        fn at(self, bit: usize) -> Option<bool>;
     }
 }
 
@@ -120,23 +118,14 @@ macro_rules! impl_bitwise {
                 $max_bits
             }
 
-            fn has_high_bit_unchecked(self, bit: usize) -> bool {
+            fn at_unchecked(self, bit: usize) -> bool {
                 let mask = (Self::one() << bit);
-                self & mask == mask
+                (self & mask) == mask
             }
 
-            fn has_high_bit(self, bit: usize) -> Option<bool> {
+            fn at(self, bit: usize) -> Option<bool> {
                 check_bit_index_or_return_none!(bit, $max_bits);
-                Some(self.has_high_bit_unchecked(bit))
-            }
-
-            fn has_low_bit_unchecked(self, bit: usize) -> bool {
-                !self.has_high_bit_unchecked(bit)
-            }
-
-            fn has_low_bit(self, bit: usize) -> Option<bool> {
-                check_bit_index_or_return_none!(bit, $max_bits);
-                Some(self.has_low_bit_unchecked(bit))
+                Some(self.at_unchecked(bit))
             }
         }
     )*};
