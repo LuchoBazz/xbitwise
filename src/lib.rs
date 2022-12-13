@@ -1,47 +1,46 @@
-pub trait Bitwise: private::Sealed {}
+use std::ops::Bound::*;
+use std::ops::RangeBounds;
+use std::ops::{Add, BitAnd, BitOr, BitXor, Div, Mul, Not, Shl, Shr, Sub};
 
-mod private {
-    use std::ops::{Add, BitAnd, BitOr, BitXor, Div, Mul, Not, Shl, Shr, Sub};
+pub trait Bitwise:
+    Sized
+    + Copy
+    + Not<Output = Self>
+    + BitOr<Output = Self>
+    + BitXor<Output = Self>
+    + Add<Output = Self>
+    + Sub<Output = Self>
+    + Mul<Output = Self>
+    + Div<Output = Self>
+    + Shr<u32, Output = Self>
+    + Shl<u32, Output = Self>
+    + BitAnd<Output = Self>
+    + Eq
+    + PartialOrd
+{
+    fn zero() -> Self;
+    fn one() -> Self;
+    fn bit_size() -> usize;
 
-    pub trait Sealed:
-        Sized
-        + Copy
-        + Not<Output = Self>
-        + BitOr<Output = Self>
-        + BitXor<Output = Self>
-        + Add<Output = Self>
-        + Sub<Output = Self>
-        + Mul<Output = Self>
-        + Div<Output = Self>
-        + Shr<u32, Output = Self>
-        + Shl<u32, Output = Self>
-        + BitAnd<Output = Self>
-        + Eq
-        + PartialOrd
-    {
-        fn zero() -> Self;
-        fn one() -> Self;
+    /// This is a comment
+    fn get_bit_unchecked(self, index: usize) -> bool;
+    fn get_bit(self, index: usize) -> Option<bool>;
+    fn set_bit_unchecked(self, index: usize) -> Self;
+    fn set_bit(self, index: usize) -> Option<Self>;
+    fn set_range<R: RangeBounds<Self>>(self, range: R) -> Self;
+    fn set(self) -> Self;
+    fn update_bit_unchecked(self, index: usize, new_value: bool) -> Self;
+    fn update_bit(self, index: usize, new_value: bool) -> Option<Self>;
+    fn clear_bit_unchecked(self, index: usize) -> Self;
+    fn clear_bit(self, index: usize) -> Option<Self>;
+    fn clear(self) -> Self;
+    fn flip_bit_unchecked(self, index: usize) -> Self;
+    fn flip_bit(self, index: usize) -> Option<Self>;
+    fn flip(self) -> Self;
 
-        fn update_bit_unchecked(self, index: usize, new_value: bool) -> Self;
-        fn update_bit(self, index: usize, new_value: bool) -> Option<Self>;
-        fn set_bit_unchecked(self, index: usize) -> Self;
-        fn set_bit(self, index: usize) -> Option<Self>;
-        fn clear_bit_unchecked(self, index: usize) -> Self;
-        fn clear_bit(self, index: usize) -> Option<Self>;
-        fn flip_bit_unchecked(self, index: usize) -> Self;
-        fn flip_bit(self, index: usize) -> Option<Self>;
-        fn flip_all(self) -> Self;
-        fn clear(self) -> Self;
-        // fn fill_range(self, left: usize, right: usize) -> Self;
-        fn fill_all(self) -> Self;
+    fn parity(self) -> usize;
 
-        fn parity(self) -> usize;
-        fn hamming_distance(self, other: Self) -> usize;
-        fn bit_size() -> usize;
-
-        fn at_unchecked(self, index: usize) -> bool;
-        fn at(self, index: usize) -> Option<bool>;
-    }
+    fn hamming_distance(self, other: Self) -> usize;
 }
 
 macro_rules! check_bit_index_or_return_none {
@@ -54,9 +53,8 @@ macro_rules! check_bit_index_or_return_none {
 
 macro_rules! impl_bitwise {
     ($($max_bits:expr => $t:ident),*) => {$(
-        impl Bitwise for $t {}
 
-        impl private::Sealed for $t {
+        impl Bitwise for $t {
 
             fn zero() -> Self {
                 0
@@ -105,7 +103,7 @@ macro_rules! impl_bitwise {
                 Some(self.flip_bit_unchecked(index))
             }
 
-            fn flip_all(self) -> Self {
+            fn flip(self) -> Self {
                 !self
             }
 
@@ -113,14 +111,22 @@ macro_rules! impl_bitwise {
                 self & 0
             }
 
-            // TODO: test
-            // fn fill_range(self, left: usize, right: usize) -> Self {
-            //     let range = (((1 << (left - 1)) - 1) ^ ((1 << right) - 1));
-            //     self | range
-            // }
+            fn set_range<R: RangeBounds<Self>>(self, range: R) -> Self {
+                let left = match range.start_bound() {
+                    Included(val) => (*val) as Self,
+                    _ => 0,
+                };
+                let right = match range.end_bound() {
+                    Included(val) => (*val) as Self,
+                    _ => ($max_bits as Self) - 1,
+                };
 
-            fn fill_all(self) -> Self {
-                self.clear().flip_all()
+                let range = (((1 << left) - 1) ^ ((1 << right) - 1)) | (1 << right);
+                self | range
+            }
+
+            fn set(self) -> Self {
+                self.clear().flip()
             }
 
             fn parity(self) -> usize {
@@ -135,14 +141,14 @@ macro_rules! impl_bitwise {
                 $max_bits
             }
 
-            fn at_unchecked(self, index: usize) -> bool {
+            fn get_bit_unchecked(self, index: usize) -> bool {
                 let mask = (Self::one() << index);
                 (self & mask) == mask
             }
 
-            fn at(self, index: usize) -> Option<bool> {
+            fn get_bit(self, index: usize) -> Option<bool> {
                 check_bit_index_or_return_none!(index, $max_bits);
-                Some(self.at_unchecked(index))
+                Some(self.get_bit_unchecked(index))
             }
         }
     )*};
@@ -192,10 +198,10 @@ impl_bitwise!(U128_BITS => u128);
 
 #[cfg(test)]
 mod tests {
-    use crate::private::Sealed;
+    use crate::Bitwise;
 
     #[test]
-    fn set_bit() {
+    fn update_bit() {
         let number: i8 = 0b00010;
         let expected: i8 = 0b10010;
         let other = number.update_bit(4, true).unwrap();
