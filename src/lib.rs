@@ -18,18 +18,59 @@ pub trait Bitwise:
     + Eq
     + PartialOrd
 {
+    /// ```rust
+    /// use xbitwise::Bitwise;
+    /// 
+    /// assert_eq!(i8::zero(), 0i8);
+    /// ```
     fn zero() -> Self;
+
+    /// ```rust
+    /// use xbitwise::Bitwise;
+    /// 
+    /// assert_eq!(i8::one(), 1i8);
+    /// ```
     fn one() -> Self;
+
+    /// ```rust
+    /// use xbitwise::Bitwise;
+    /// 
+    /// let expected: usize = 8;
+    /// assert_eq!(i8::bit_size(), 8usize);
+    /// ```
     fn bit_size() -> usize;
 
-    /// This is a comment
+    /// ```rust
+    /// use xbitwise::Bitwise;
+    /// 
+    /// let number: i8 = 0b00010;
+    /// let other = number.get_bit_unchecked(1);
+    /// assert_eq!(other, true);
+    /// ```
     fn get_bit_unchecked(self, index: usize) -> bool;
+
+    /// ```rust
+    /// use xbitwise::Bitwise;
+    /// 
+    /// let number: i8 = 0b00010;
+    /// let other = number.get_bit(1);
+    /// assert_eq!(other, Some(true));
+    /// ```
     fn get_bit(self, index: usize) -> Option<bool>;
     fn set_bit_unchecked(self, index: usize) -> Self;
     fn set_bit(self, index: usize) -> Option<Self>;
     fn set_range<R: RangeBounds<Self>>(self, range: R) -> Self;
     fn set(self) -> Self;
     fn update_bit_unchecked(self, index: usize, new_value: bool) -> Self;
+
+    /// ```rust
+    /// use xbitwise::Bitwise;
+    /// 
+    /// let number: i8 = 0b00010;
+    /// let expected: i8 = 0b10010;
+    /// let other = number.update_bit(4, true).unwrap();
+    /// assert_eq!(other, expected);
+    /// ```
     fn update_bit(self, index: usize, new_value: bool) -> Option<Self>;
     fn clear_bit_unchecked(self, index: usize) -> Self;
     fn clear_bit(self, index: usize) -> Option<Self>;
@@ -59,6 +100,7 @@ macro_rules! impl_bitwise {
             fn zero() -> Self {
                 0
             }
+
             fn one() -> Self {
                 1
             }
@@ -199,6 +241,35 @@ impl_bitwise!(U128_BITS => u128);
 #[cfg(test)]
 mod tests {
     use crate::Bitwise;
+
+    #[test]
+    fn zero() {
+        assert_eq!(i8::zero(), 0i8);
+    }
+
+    #[test]
+    fn one() {
+        assert_eq!(i8::one(), 1i8);
+    }
+    
+    #[test]
+    fn bit_size() {
+        assert_eq!(i8::bit_size(), 8usize);
+    }
+
+    #[test]
+    fn get_bit_unchecked() {
+        let number: i8 = 0b00010;
+        let other = number.get_bit_unchecked(1);
+        assert_eq!(other, true);
+    }
+
+    #[test]
+    fn get_bit() {
+        let number: i8 = 0b00010;
+        let other = number.get_bit(1);
+        assert_eq!(other, Some(true));
+    }
 
     #[test]
     fn update_bit() {

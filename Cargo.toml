@@ -6,7 +6,7 @@ edition = "2018"
 keywords = ["bitwise", "integer"]
 license = "MIT"
 repository = "https://github.com/LuisMBaezCo/xbitwise"
-rust-version = "1.65"
+rust-version = "1.31.0"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
