@@ -14,6 +14,20 @@
 //! [dependencies]
 //! xbitwise = "0.1"
 //! ```
+//! Or you can add for the different features
+//! 
+//! ```toml
+//! [dependencies]
+//! xbitwise = { version = "0.1", features = ["i32", "u32"] }
+//! ```
+//! 
+//! `default = ["signed", "unsigned"]`
+//! 
+//! `signed = ["i8", "i16", "i32", "i64", "i128"]`
+//! 
+//! `unsigned = ["u8", "u16", "u32", "u64", "u128"]`
+//! 
+//! `i8`, `i16`, `i32`, `i64`, `i128`, `u8`, `u16`, `u32`, `u64`, `u128`
 //!
 //! *Version requirement: xbitwise supports rustc 1.31 and up.*
 //!
