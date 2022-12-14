@@ -1,10 +1,13 @@
 [package]
 name = "xbitwise"
 version = "0.1.0"
+description = "A Rust library that extends the basic functionality of bitwise operations"
 authors = ["Luis Miguel Báez <es.luismiguelbaez@gmail.com>"]
 edition = "2018"
-keywords = ["bitwise", "integer"]
 license = "MIT"
+readme = "README.md"
+keywords = ["bitwise", "integer"]
+categories = ["bitwise"]
 repository = "https://github.com/LuisMBaezCo/xbitwise"
 rust-version = "1.31.0"
 
