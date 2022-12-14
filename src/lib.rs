@@ -1,3 +1,32 @@
+// Copyright 2022 Developers of the xbitwise project.
+//
+// Licensed under the MIT license <LICENSE or https://opensource.org/licenses/MIT>
+// This file may not be copied, modified, or distributed
+// except according to those terms.
+
+//! # Extend Bitwise Library for Rust
+//!
+//! A Rust library that extends the basic functionality of bitwise operations
+//!
+//! ## Usage
+//! Add this to your `Cargo.toml`:
+//! ```toml
+//! [dependencies]
+//! xbitwise = "0.1"
+//! ```
+//! 
+//! *Version requirement: xbitwise supports rustc 1.31 and up.*
+//! 
+//! ## Bug reports
+//! 
+//! You can report any bugs [here](https://github.com/LuisMBaezCo/xbitwise/issues).
+//! 
+//! # License
+//! 
+//! xbitwise is distributed under the terms of both the MIT license.
+//! 
+//! See [LICENSE-MIT](LICENSE-MIT)
+
 use std::ops::Bound::*;
 use std::ops::RangeBounds;
 use std::ops::{Add, BitAnd, BitOr, BitXor, Div, Mul, Not, Shl, Shr, Sub};
