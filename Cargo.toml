@@ -12,6 +12,8 @@ repository = "https://github.com/LuisMBaezCo/xbitwise"
 rust-version = "1.31.0"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+exclude = ["*.md"]
+include = ["**/*.rs", "Cargo.toml"]
 
 [dependencies]
 
