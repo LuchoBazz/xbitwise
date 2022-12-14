@@ -14,17 +14,17 @@
 //! [dependencies]
 //! xbitwise = "0.1"
 //! ```
-//! 
+//!
 //! *Version requirement: xbitwise supports rustc 1.31 and up.*
-//! 
+//!
 //! ## Bug reports
-//! 
+//!
 //! You can report any bugs [here](https://github.com/LuisMBaezCo/xbitwise/issues).
-//! 
+//!
 //! # License
-//! 
+//!
 //! xbitwise is distributed under the terms of both the MIT license.
-//! 
+//!
 //! See [LICENSE-MIT](LICENSE-MIT)
 
 use std::ops::Bound::*;
@@ -47,15 +47,34 @@ pub trait Bitwise:
     + Eq
     + PartialOrd
 {
+    /// Gets the status of the bit in the index position
+    ///
+    /// **Note:** This function does not check that the `index` is within the allowed range.
+    ///
+    /// **Possible values:** `true` and `false`
+    ///
+    /// **Stable:** Yes
+    ///
+    /// # Examples
+    ///
     /// ```rust
     /// use xbitwise::Bitwise;
     ///
-    /// let number: i8 = 0b00010;
-    /// let other = number.get_bit_unchecked(1);
+    /// let other = 0b00010.get_bit_unchecked(1);
     /// assert_eq!(other, true);
     /// ```
     fn get_bit_unchecked(self, index: usize) -> bool;
 
+    /// Gets the status of the bit in the `index` position
+    ///
+    /// **Note:** Returns `None` when the `index` is not in the allowed range.
+    ///
+    /// **Possible values:** `None`, `Some(true)` and `Some(false)`
+    ///
+    /// **Stable:** Yes
+    ///
+    /// # Examples
+    ///
     /// ```rust
     /// use xbitwise::Bitwise;
     ///
@@ -65,6 +84,16 @@ pub trait Bitwise:
     /// ```
     fn get_bit(self, index: usize) -> Option<bool>;
 
+    /// Turn on the bit in the index position
+    ///
+    /// **Note:** This function does not check that the `index` is within the allowed range.
+    ///
+    /// **Possible values:** `integer`
+    ///
+    /// **Stable:** Yes
+    ///
+    /// # Examples
+    ///
     /// ```rust
     /// use xbitwise::Bitwise;
     ///
@@ -74,6 +103,16 @@ pub trait Bitwise:
     /// ```
     fn set_bit_unchecked(self, index: usize) -> Self;
 
+    /// Turn on the bit in the index position
+    ///
+    /// **Note:** Returns `None` when the `index` is not in the allowed range.
+    ///
+    /// **Possible values:** `None`, `Some(integer)`
+    ///
+    /// **Stable:** Yes
+    ///
+    /// # Examples
+    ///
     /// ```rust
     /// use xbitwise::Bitwise;
     ///
@@ -83,25 +122,71 @@ pub trait Bitwise:
     /// ```
     fn set_bit(self, index: usize) -> Option<Self>;
 
+    /// Turns on all bits in the specified range and merges the bits that are already on
+    ///
+    /// **Note:** This function does not check that the `index` is within the allowed range.
+    ///
+    /// **Possible values:** `integer`
+    ///
+    /// **Stable:** No
+    ///
+    /// # Examples
+    ///
     /// ```rust
     /// use xbitwise::Bitwise;
     ///
     /// let number: i32 = 0b100;
     ///
-    /// let other= number.set_range(..10);
+    /// let other = number.set_range_unchecked(..10);
     /// assert_eq!(other, 0b1111111111);
     ///
-    /// let other= number.set_range(0..10);
+    /// let other = number.set_range_unchecked(0..10);
     /// assert_eq!(other, 0b1111111111);
     ///
-    /// let other= number.set_range(5..7);
+    /// let other = number.set_range_unchecked(5..7);
     /// assert_eq!(other, 0b01100100);
     ///
-    /// let other= number.set_range(5..=7);
+    /// let other = number.set_range_unchecked(5..=7);
     /// assert_eq!(other, 0b11100100);
     /// ```
-    fn set_range<R: RangeBounds<Self>>(self, range: R) -> Self;
+    fn set_range_unchecked<R: RangeBounds<Self>>(self, range: R) -> Self;
 
+    /// Turns on all bits in the specified range and merges the bits that are already on
+    ///
+    /// **Note:** Returns `None` when the `index` is not in the allowed range.
+    ///
+    /// **Possible values:** `None`, `Some(integer)`
+    ///
+    /// **Stable:** No
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// use xbitwise::Bitwise;
+    ///
+    /// let number: i32 = 0b100;
+    /// let other: Option<i32> = number.set_range(..10);
+    /// assert_eq!(other, Some(0b1111111111));
+    ///
+    /// let other: Option<i32> = number.set_range(0..10);
+    /// assert_eq!(other, Some(0b1111111111));
+    ///
+    /// let other: Option<i32> = number.set_range(5..7);
+    /// assert_eq!(other, Some(0b01100100));
+    ///
+    /// let other: Option<i32> = number.set_range(5..=7);
+    /// assert_eq!(other, Some(0b11100100));
+    /// ```
+    fn set_range<R: RangeBounds<Self>>(self, range: R) -> Option<Self>;
+
+    /// Turn on all the bits
+    ///
+    /// **Possible values:** `integer`
+    ///
+    /// **Stable:** Yes
+    ///
+    /// # Examples
+    ///
     /// ```rust
     /// use xbitwise::Bitwise;
     ///
@@ -116,6 +201,16 @@ pub trait Bitwise:
     /// ```
     fn set_all(self) -> Self;
 
+    /// Update the bit at position `index` with the value `new_value`
+    ///
+    /// **Note:** This function does not check that the `index` is within the allowed range.
+    ///
+    /// **Possible values:** `integer`
+    ///
+    /// **Stable:** Yes
+    ///
+    /// # Examples
+    ///
     /// ```rust
     /// use xbitwise::Bitwise;
     ///
@@ -124,6 +219,16 @@ pub trait Bitwise:
     /// ```
     fn update_bit_unchecked(self, index: usize, new_value: bool) -> Self;
 
+    /// Update the bit at position `index` with the value `new_value`
+    ///
+    /// **Note:** Returns `None` when the `index` is not in the allowed range.
+    ///
+    /// **Possible values:** `integer`
+    ///
+    /// **Stable:** Yes
+    ///
+    /// # Examples
+    ///
     /// ```rust
     /// use xbitwise::Bitwise;
     ///
@@ -132,6 +237,16 @@ pub trait Bitwise:
     /// ```
     fn update_bit(self, index: usize, new_value: bool) -> Option<Self>;
 
+    /// Turn off the bit in the index position
+    ///
+    /// **Note:** This function does not check that the `index` is within the allowed range.
+    ///
+    /// **Possible values:** `integer`
+    ///
+    /// **Stable:** Yes
+    ///
+    /// # Examples
+    ///
     /// ```rust
     /// use xbitwise::Bitwise;
     ///
@@ -140,6 +255,16 @@ pub trait Bitwise:
     /// ```
     fn clear_bit_unchecked(self, index: usize) -> Self;
 
+    /// Turn off the bit in the index position
+    ///
+    /// **Note:** Returns `None` when the `index` is not in the allowed range.
+    ///
+    /// **Possible values:** `integer`
+    ///
+    /// **Stable:** Yes
+    ///
+    /// # Examples
+    ///
     /// ```rust
     /// use xbitwise::Bitwise;
     ///
@@ -148,6 +273,14 @@ pub trait Bitwise:
     /// ```
     fn clear_bit(self, index: usize) -> Option<Self>;
 
+    /// Turn off all bits
+    ///
+    /// **Possible values:** `integer`
+    ///
+    /// **Stable:** Yes
+    ///
+    /// # Examples
+    ///
     /// ```rust
     /// use xbitwise::Bitwise;
     ///
@@ -156,6 +289,16 @@ pub trait Bitwise:
     /// ```
     fn clear(self) -> Self;
 
+    /// Flips the bit at the index position
+    ///
+    /// **Note:** This function does not check that the `index` is within the allowed range.
+    ///
+    /// **Possible values:** `integer`
+    ///
+    /// **Stable:** Yes
+    ///
+    /// # Examples
+    ///
     /// ```rust
     /// use xbitwise::Bitwise;
     ///
@@ -164,6 +307,16 @@ pub trait Bitwise:
     /// ```
     fn flip_bit_unchecked(self, index: usize) -> Self;
 
+    /// Flips the bit at the index position
+    ///
+    /// **Note:** Returns `None` when the `index` is not in the allowed range.
+    ///
+    /// **Possible values:** `integer`
+    ///
+    /// **Stable:** Yes
+    ///
+    /// # Examples
+    ///
     /// ```rust
     /// use xbitwise::Bitwise;
     ///
@@ -172,15 +325,31 @@ pub trait Bitwise:
     /// ```
     fn flip_bit(self, index: usize) -> Option<Self>;
 
+    /// Flips all the bits
+    ///
+    /// **Possible values:** `integer`
+    ///
+    /// **Stable:** Yes
+    ///
+    /// # Examples
+    ///
     /// ```rust
     /// use xbitwise::Bitwise;
     ///
     /// #[allow(overflowing_literals)]
-    /// let other: i8 = 0b10010001.flip();
+    /// let other: i8 =   0b10010001.flip();
     /// assert_eq!(other, 0b01101110);
     /// ```
     fn flip(self) -> Self;
 
+    /// Returns the parity of x, i.e. the number of 1-bits in x modulo 2.
+    ///
+    /// **Possible values:** `true` or `false`
+    ///
+    /// **Stable:** Yes
+    ///
+    /// # Examples
+    ///
     /// ```rust
     /// use xbitwise::Bitwise;
     ///
@@ -192,6 +361,15 @@ pub trait Bitwise:
     /// ```
     fn parity(self) -> bool;
 
+    /// Returns a number with the hamming distance, which is the number of positions at which
+    /// the corresponding bits are different.
+    /// 
+    /// **Possible values:** `true` or `false`
+    ///
+    /// **Stable:** Yes
+    ///
+    /// # Examples
+    ///
     /// ```rust
     /// use xbitwise::Bitwise;
     ///
@@ -200,6 +378,14 @@ pub trait Bitwise:
     /// ```
     fn hamming_distance(self, other: Self) -> usize;
 
+    /// Return a number with all bits off (an integer of value zero).
+    /// 
+    /// **Possible values:** `0`
+    /// 
+    /// **Stable:** Yes
+    ///
+    /// # Examples
+    ///
     /// ```rust
     /// use xbitwise::Bitwise;
     ///
@@ -207,6 +393,14 @@ pub trait Bitwise:
     /// ```
     fn zero() -> Self;
 
+    /// Returns a number with the least significant bit on (an integer with value one).
+    ///
+    /// **Possible values:** `1`
+    /// 
+    /// **Stable:** Yes
+    ///
+    /// # Examples
+    ///
     /// ```rust
     /// use xbitwise::Bitwise;
     ///
@@ -214,6 +408,14 @@ pub trait Bitwise:
     /// ```
     fn one() -> Self;
 
+    /// Returns the number of bits of the number
+    ///
+    /// **Possible values:** `integer`
+    /// 
+    /// **Stable:** Yes
+    ///
+    /// # Examples
+    ///
     /// ```rust
     /// use xbitwise::Bitwise;
     ///
@@ -255,7 +457,7 @@ macro_rules! impl_bitwise {
                 Some(self.set_bit_unchecked(index))
             }
 
-            fn set_range<R: RangeBounds<Self>>(self, range: R) -> Self {
+            fn set_range_unchecked<R: RangeBounds<Self>>(self, range: R) -> Self {
                 let left = match range.start_bound() {
                     Included(val) => (*val) as Self,
                     Excluded(val) => (*val) + 1 as Self,
@@ -270,6 +472,23 @@ macro_rules! impl_bitwise {
 
                 let range = (((1 << left) - 1) ^ ((1 << right) - 1)) | (1 << right);
                 self | range
+            }
+
+            fn set_range<R: RangeBounds<Self>>(self, range: R) -> Option<Self> {
+                let left = match range.start_bound() {
+                    Included(val) => (*val) as usize,
+                    Excluded(val) => ((*val) + 1) as usize,
+                    _ => 0,
+                };
+
+                let right = match range.end_bound() {
+                    Included(val) => (*val) as usize,
+                    Excluded(val) => ((*val) - 1) as usize,
+                    _ => ($max_bits as usize) - 2 as usize,
+                };
+                check_bit_index_or_return_none!(left, $max_bits);
+                check_bit_index_or_return_none!(right, $max_bits);
+                Some(self.set_range_unchecked(range))
             }
 
             fn set_all(self) -> Self {
@@ -403,16 +622,29 @@ mod tests {
     }
 
     #[test]
+    fn set_range_unchecked() {
+        let number: i32 = 0b100;
+        let other: i32 = number.set_range_unchecked(..10);
+        assert_eq!(other, 0b1111111111);
+        let other: i32 = number.set_range_unchecked(0..10);
+        assert_eq!(other, 0b1111111111);
+        let other: i32 = number.set_range_unchecked(5..7);
+        assert_eq!(other, 0b01100100);
+        let other: i32 = number.set_range_unchecked(5..=7);
+        assert_eq!(other, 0b11100100);
+    }
+
+    #[test]
     fn set_range() {
         let number: i32 = 0b100;
-        let other: i32 = number.set_range(..10);
-        assert_eq!(other, 0b1111111111);
-        let other: i32 = number.set_range(0..10);
-        assert_eq!(other, 0b1111111111);
-        let other: i32 = number.set_range(5..7);
-        assert_eq!(other, 0b01100100);
-        let other: i32 = number.set_range(5..=7);
-        assert_eq!(other, 0b11100100);
+        let other: Option<i32> = number.set_range(..10);
+        assert_eq!(other, Some(0b1111111111));
+        let other: Option<i32> = number.set_range(0..10);
+        assert_eq!(other, Some(0b1111111111));
+        let other: Option<i32> = number.set_range(5..7);
+        assert_eq!(other, Some(0b01100100));
+        let other: Option<i32> = number.set_range(5..=7);
+        assert_eq!(other, Some(0b11100100));
     }
 
     #[allow(overflowing_literals)]
